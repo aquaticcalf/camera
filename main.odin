@@ -154,14 +154,14 @@ main :: proc() {
 				app.pan_start_x = app.pan_x
 				app.pan_start_y = app.pan_y
 			} else if !app.decorated {
-				app.win_drag = true
+				set_window_dragging(app, true)
 				app.win_drag_sx = cursor.x
 				app.win_drag_sy = cursor.y
 				app.win_start_x, app.win_start_y = glfw.GetWindowPos(w)
 			}
 		} else if action == glfw.RELEASE {
 			app.dragging = false
-			app.win_drag = false
+			set_window_dragging(app, false)
 		}
 	})
 
@@ -199,7 +199,7 @@ update_drag :: proc(app: ^App) {
 	if app == nil || (!app.dragging && !app.win_drag) { return }
 	if windows.GetAsyncKeyState(windows.VK_LBUTTON) >= 0 {
 		app.dragging = false
-		app.win_drag = false
+		set_window_dragging(app, false)
 		return
 	}
 
@@ -214,6 +214,14 @@ update_drag :: proc(app: ^App) {
 		app.pan_x = app.pan_start_x - dx
 		app.pan_y = app.pan_start_y - dy
 	}
+}
+
+set_window_dragging :: proc(app: ^App, dragging: bool) {
+	if app == nil { return }
+	app.win_drag = dragging
+	mode: c.int = glfw.CURSOR_NORMAL
+	if dragging { mode = glfw.CURSOR_HIDDEN }
+	glfw.SetInputMode(app.window, glfw.CURSOR, mode)
 }
 
 show_context_menu :: proc(app: ^App) {
